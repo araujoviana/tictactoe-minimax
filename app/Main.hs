@@ -49,26 +49,52 @@ main = do
       main
 
 gameLoop :: Bool -> Board -> Mark -> Mark -> IO ()
-gameLoop first player bot = do
-  if emptyCells > 0 and (not $ gameOver board)
-    then
-      ( if first
-          then
-            ( do
-                botTurn board player bot
-                humanTurn board player bot
-                gameLoop first board player bot
-            )
-          else
-            ( do
-                humanTurn board player bot
-                botTurn board player bot
-                gameLoop first board player bot
-            )
-      )
-    else undefined -- TODO Game over here!
-  where
-    emptyCells = length . concatMap (filter isNothing) board
+gameLoop first board player bot =
+  if gameOver board
+    then undefined -- TODO Winner dialogue
+    else case first of
+      True -> do
+        -- Player first
+        let playerMovedBoard = getPlayerMove board player -- A new board after the player moves
+        -- let botMovedBoard = getBotMove playerMovedBoard bot -- A new board after the bot moves, also TODO thats an IO Board!
+        -- TODO here you'd write whatever turns an IO Board into a board and call game loop again
+        putStrLn "Balls"
+      False -> do
+        let botMovedBoard = getBotMove board bot -- A new board after the bot moves
+        -- let playerMovedBoard = getPlayerMove botMovedBoard player -- A new board after the player moves, also TODO thats an IO Board!
+        -- TODO here you'd write whatever turns an IO Board into a board and call game loop again
+        putStrLn "Balls"
+
+getPlayerMove :: Board -> Mark -> IO Board
+getPlayerMove board player = do
+  putStrLn $ "\n" ++ show board ++ "\n\nEnter you move (1-9)"
+  input <- getLine
+  let pos = readMaybe input :: Maybe Int
+  case pos of
+    Just position -> do
+      let row = (position - 1) `div` 3
+          column = (position - 1) `mod` 3
+      if (board !! row !! column) == Empty
+        then return (updateBoard board row column player)
+        else do
+          putStrLn "Tile is full! Try again."
+          getPlayerMove board player
+    Nothing -> do
+      putStrLn "Invalid input! Enter a number between 1 and 9."
+      getPlayerMove board player
+
+getBotMove :: Board -> Mark -> IO Board
+getBotMove board bot = undefined -- TODO
+
+updateBoard :: Board -> Int -> Int -> Mark -> Board
+updateBoard board row column mark =
+  -- REVIEW Unreadable?
+  take row board
+    ++ [ take column (board !! row)
+           ++ [mark]
+           ++ drop (column + 1) (board !! row)
+       ]
+    ++ drop (row + 1) board
 
 gameOver :: Board -> Bool
 gameOver board = undefined
