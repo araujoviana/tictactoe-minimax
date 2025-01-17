@@ -24,6 +24,8 @@ type Board = [[Mark]] -- Any tile could be empty
 
 type Score = Int
 
+type Position = (Int, Int)
+
 main :: IO ()
 main = do
   putStrLn "Welcome to Tic-Tac-Toe!\nAre you X or O?"
@@ -117,8 +119,34 @@ diagonalCheck board =
    in firstDiagonalCheck board || secondDiagonalCheck board
 
 -- This is what matters, the minimax!
-minimax :: Board -> Score
-minimax board = undefined
+minimax :: Board -> Mark -> Score
+minimax board bot = undefined
+
+emptyPositions :: Board -> [Position]
+emptyPositions board =
+  [(row, column) | row <- [0, 1, 2], column <- [0, 1, 2], board !! row !! column == Empty]
+
+
+-- Evaluate, interprets a board and checks if its beneficial to the bot.
+evaluate :: Board -> Mark -> Int
+evaluate board bot
+  | horizontalCheck board = if checkWinner board bot then 1 else -1
+  | verticalCheck board = if checkWinner board bot then 1 else -1
+  | diagonalCheck board = if checkWinner board bot then 1 else -1
+  | otherwise = 0
+  where
+    checkWinner b mark =
+      any (all (== mark)) b
+        || any (all (== mark)) (transpose b)
+        || checkDiagonals b mark
+    checkDiagonals b mark =
+      let n = length b
+          -- REVIEW Too complicated, maybe make it a function?
+          mainDiagonal = [b !! i !! i | i <- [0 .. n - 1]]
+          antiDiagonal = [b !! i !! (n - 1 - i) | i <- [0 .. n - 1]]
+       in all (== mark) mainDiagonal || all (== mark) antiDiagonal
+
+-- NOTE TESTING BOARDS FOR REPL
 
 -- All rows are the same (horizontal win for X)
 board1 :: Board
