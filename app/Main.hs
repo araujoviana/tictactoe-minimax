@@ -7,12 +7,13 @@ module Main where
 
 import Control.Monad
 import Data.Char (toLower)
-import Data.List (transpose)
+import Data.List (maximumBy, minimumBy, transpose)
 import Data.Maybe (fromMaybe, isNothing)
+import Data.Ord
 import Text.Read (readMaybe)
 
 -- X is the minimizing player and O is the minimizing player
-data Mark = X | Empty | O deriving (Show, Read, Eq, Ord)
+data Mark = O | Empty | X deriving (Show, Read, Eq, Ord)
 
 -- Tic-Tac-Toe Board
 ---------------
@@ -119,13 +120,39 @@ diagonalCheck board =
    in firstDiagonalCheck board || secondDiagonalCheck board
 
 -- This is what matters, the minimax!
-minimax :: Board -> Mark -> Score
-minimax board bot = undefined
+minimax :: Board -> Mark ->  (Position, Score)
+minimax board bot
+  | gameOver board = (head (emptyPositions board), evaluate board bot)
+  | bot == X = maximizingMove board bot
+  | bot == O = minimizingMove board bot
+
+maximizingMove :: Board -> Mark -> (Position, Score)
+maximizingMove board bot = maximumBy (comparing snd) moves
+  where
+    moves = [(pos, minimax (applyMove board pos bot) (opponent bot)) | pos <- emptyPositions board]
+
+minimizingMove :: Board -> Mark -> (Position, Score)
+minimizingMove board bot = minimumBy (comparing snd) moves
+  where
+    moves = [(pos, minimax (applyMove board pos bot) (opponent bot)) | pos <- emptyPositions board]
+
+opponent :: Mark -> Mark
+opponent X = O
+opponent O = X
 
 emptyPositions :: Board -> [Position]
 emptyPositions board =
   [(row, column) | row <- [0, 1, 2], column <- [0, 1, 2], board !! row !! column == Empty]
 
+-- TODO An entertaining explanation about this could be written...
+applyMove :: Board -> Position -> Mark -> Board
+applyMove board (row, column) mark =
+  take row board
+    ++ [ take column (board !! row)
+           ++ [mark]
+           ++ drop (column + 1) (board !! row)
+       ]
+    ++ drop (row + 1) board
 
 -- Evaluate, interprets a board and checks if its beneficial to the bot.
 evaluate :: Board -> Mark -> Int
