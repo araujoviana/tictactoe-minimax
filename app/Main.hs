@@ -97,4 +97,75 @@ updateBoard board row column mark =
     ++ drop (row + 1) board
 
 gameOver :: Board -> Bool
-gameOver board = undefined
+gameOver board = any ($ board) [horizontalCheck, verticalCheck, diagonalCheck]
+
+-- Checks if there's a horizontal win on the board by verifying any row has the same non-empty piece
+horizontalCheck :: Board -> Bool
+horizontalCheck = any (\b -> all (/= Empty) b && all (== head b) b)
+
+-- Checks for a winning condition in the vertical direction on a Board by transposing and checking horizontally
+verticalCheck :: Board -> Bool
+verticalCheck = horizontalCheck . transpose
+
+-- Checks if a winning condition exists on either of the diagonals of a board
+diagonalCheck :: Board -> Bool
+diagonalCheck board =
+  let firstDiagonalCheck b =
+        horizontalCheck [[b !! i !! i | i <- [0 .. length b - 1]]]
+      secondDiagonalCheck b =
+        horizontalCheck [[b !! i !! (length b - 1 - i) | i <- [0 .. length b - 1]]]
+   in firstDiagonalCheck board || secondDiagonalCheck board
+
+-- This is what matters, the minimax!
+minimax :: Board -> Score
+minimax board = undefined
+
+-- All rows are the same (horizontal win for X)
+board1 :: Board
+board1 =
+  [ [X, X, X],
+    [X, X, X],
+    [X, X, X]
+  ]
+
+-- Mixed rows (no horizontal win)
+board2 :: Board
+board2 =
+  [ [X, X, O],
+    [X, O, X],
+    [O, X, O]
+  ]
+
+-- One row is uniform, but others aren't (no horizontal win)
+board3 :: Board
+board3 =
+  [ [X, X, X],
+    [O, Empty, O],
+    [X, O, X]
+  ]
+
+-- All rows are uniform, but with different Marks (no horizontal win)
+board4 :: Board
+board4 =
+  [ [X, X, X],
+    [O, O, O],
+    [Empty, Empty, Empty]
+  ]
+
+-- Empty board (no horizontal win)
+board5 :: Board
+board5 =
+  [ [Empty, Empty, Empty],
+    [Empty, Empty, Empty],
+    [Empty, Empty, Empty]
+  ]
+
+-- Horizontal win for O
+board6 :: Board
+board6 =
+  [ [O, O, O],
+    [O, O, O],
+    [O, O, O]
+  ]
+
+boards = [board1, board2, board3, board4, board5, board6]
