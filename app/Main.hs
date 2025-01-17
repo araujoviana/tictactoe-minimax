@@ -11,7 +11,8 @@ import Data.List (transpose)
 import Data.Maybe (fromMaybe, isNothing)
 import Text.Read (readMaybe)
 
-data Mark = X | O deriving (Show, Read, Eq, Ord)
+-- X is the minimizing player and O is the minimizing player
+data Mark = X | Empty | O deriving (Show, Read, Eq, Ord)
 
 -- Tic-Tac-Toe Board
 ---------------
@@ -19,7 +20,9 @@ data Mark = X | O deriving (Show, Read, Eq, Ord)
 --  [X, ,O], --
 --  [X,O, ]] --
 ---------------
-type Board = [[Maybe Mark]] -- Any tile could be empty
+type Board = [[Mark]] -- Any tile could be empty
+
+type Score = Int
 
 main :: IO ()
 main = do
