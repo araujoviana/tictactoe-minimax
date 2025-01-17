@@ -29,7 +29,7 @@ main = do
   putStrLn "Welcome to Tic-Tac-Toe!\nAre you X or O?"
   input <- getLine
 
-  let player = fromMaybe X $ readMaybe input
+  let player = fromMaybe X $ readMaybe input -- TODO verify is input is Empty
   let bot = case player of -- Your opponent has the opposing mark
         X -> O
         O -> X
@@ -37,7 +37,7 @@ main = do
   putStrLn $ "You are " ++ show player
 
   -- The empty board
-  let board = replicate 3 (replicate 3 Nothing) :: Board
+  let board = replicate 3 (replicate 3 Empty) :: Board
 
   putStrLn "Do you want to play first? [y/n]:"
   choice <- getLine
