@@ -1,7 +1,13 @@
+-- Based on the python implementation Cledersonbc at https://github.com/Cledersonbc/tic-tac-toe-minimax
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
+{-# HLINT ignore "Use if" #-}
+
 module Main where
 
+import Control.Monad
 import Data.Char (toLower)
-import Data.List ()
+import Data.List (transpose)
 import Data.Maybe (fromMaybe, isNothing)
 import Text.Read (readMaybe)
 
