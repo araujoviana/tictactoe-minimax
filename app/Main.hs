@@ -80,20 +80,31 @@ gameLoop first board player bot =
 
 getPlayerMove :: Board -> Mark -> IO Board
 getPlayerMove board player = do
-  putStrLn $ "\n" ++ show board ++ "\n\nEnter you move (1-9)"
+  putStrLn $ "\n" ++ displayBoard board ++ "\n\nEnter you move (1-9)"
   input <- getLine
   let pos = readMaybe input :: Maybe Int
+  -- REVIEW There's three checks being made here (with two ifs!),
+  -- so this function should be rewritten to be more functional(?)
   case pos of
-    Just position -> do
-      let row = (position - 1) `div` 3
-          column = (position - 1) `mod` 3
-      if (board !! row !! column) == Empty
-        then return (updateBoard board row column player)
+    Just position ->
+      if position > 0 && position <= 9
+        then do
+          -- Input is valid!
+          let row = (position - 1) `div` 3
+              column = (position - 1) `mod` 3
+          if (board !! row !! column) == Empty
+            then return (applyMove board (row, column) player)
+            else do
+              -- Input is in a filled tile
+              putStrLn "\nTile is full! Try again."
+              getPlayerMove board player
         else do
-          putStrLn "Tile is full! Try again."
+          -- Input is out of bounds
+          putStrLn "\nInvalid input! Enter a number between 1 and 9."
           getPlayerMove board player
     Nothing -> do
-      putStrLn "Invalid input! Enter a number between 1 and 9."
+      -- Input is not a number
+      putStrLn "\nInvalid input! Enter a number between 1 and 9."
       getPlayerMove board player
 
 getBotMove :: Board -> Mark -> IO Board
