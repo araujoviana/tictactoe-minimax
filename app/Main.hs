@@ -124,7 +124,8 @@ getBotMove board bot = do
       return board
 
 gameOver :: Board -> Bool
-gameOver board = any ($ board) [horizontalCheck, verticalCheck, diagonalCheck]
+gameOver [] = False -- An empty board shouldn't mean the end
+gameOver board = any ($ board) [horizontalCheck, verticalCheck, diagonalCheck, fullCheck]
 
 -- Checks if there's a horizontal win on the board by verifying any row has the same non-empty piece
 horizontalCheck :: Board -> Bool
@@ -143,12 +144,9 @@ diagonalCheck board =
         horizontalCheck [[b !! i !! (length b - 1 - i) | i <- [0 .. length b - 1]]]
    in firstDiagonalCheck board || secondDiagonalCheck board
 
--- This is what matters, the minimax!
-minimax :: Board -> Mark ->  (Position, Score)
-minimax board bot
-  | gameOver board = (head (emptyPositions board), evaluate board bot)
-  | bot == X = maximizingMove board bot
-  | bot == O = minimizingMove board bot
+-- Checks if a DRAW condition exists on the board
+fullCheck :: Board -> Bool
+fullCheck = all (notElem Empty)
 
 -- A big misunderstanding that I had when making this is that no matter who the bot was,
 -- X was maximized and O was minimized, but minimax specifies that the bot wants to MAXIMIZE
