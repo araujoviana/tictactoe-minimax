@@ -39,18 +39,10 @@ type Position = (Int, Int)
 
 main :: IO ()
 main = do
-  putStrLn "Welcome to Tic-Tac-Toe!\nAre you X or O?"
-  input <- getLine
+  putStrLn "Welcome to Tic-Tac-Toe!\nYou are X."
 
-  let player = fromMaybe X $ readMaybe input -- TODO verify is input is Empty
-  let bot = case player of -- Your opponent has the opposing mark
-        X -> O
-        O -> X
-
-  putStrLn $ "You are " ++ show player
-
-  -- The empty board
-  let board = replicate 3 (replicate 3 Empty) :: Board
+  let player = X
+  let bot = O
 
   putStrLn "Do you want to play first? [y/n]:"
   choice <- getLine
