@@ -13,7 +13,17 @@ import Data.Ord (comparing)
 import Text.Read (readMaybe)
 
 -- X is the minimizing player and O is the minimizing player
-data Mark = O | Empty | X deriving (Show, Read, Eq, Ord)
+data Mark = O | Empty | X deriving (Eq, Ord)
+
+instance Read Mark where
+  readsPrec _ "O" = [(O, "")]
+  readsPrec _ "X" = [(X, "")]
+  readsPrec _ _ = [] -- Users shouldn't be able to write Empty
+
+instance Show Mark where
+  show O = "O"
+  show X = "X"
+  show Empty = "_" -- Show Empty diversely
 
 -- Tic-Tac-Toe Board
 ---------------
