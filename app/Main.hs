@@ -44,6 +44,7 @@ main = do
   let player = X
   let bot = O
 
+  let board = replicate 3 (replicate 3 Empty) -- Empty board
   putStrLn "Do you want to play first? [y/n]:"
   choice <- getLine
   case map toLower choice of
@@ -56,19 +57,26 @@ main = do
 gameLoop :: Bool -> Board -> Mark -> Mark -> IO ()
 gameLoop first board player bot =
   if gameOver board
-    then undefined -- TODO Winner dialogue
+    then do
+      putStrLn $
+        "Game Over! "
+          ++ case map (markWins board) [player, bot] of
+            [True, False] -> "The Player wins!"
+            [False, True] -> "The Bot wins!"
+            -- If someone ever sees this message then something is certainly wrong...
+            [True, True] -> "Both win? Theres something wrong..."
+            _ -> "Nobody wins! (it's a draw.)"
+      putStrLn $ "\n" ++ displayBoard board
     else case first of
       True -> do
         -- Player first
-        let playerMovedBoard = getPlayerMove board player -- A new board after the player moves
-        -- let botMovedBoard = getBotMove playerMovedBoard bot -- A new board after the bot moves, also TODO thats an IO Board!
-        -- TODO here you'd write whatever turns an IO Board into a board and call game loop again
-        putStrLn "Balls"
+        playerMovedBoard <- getPlayerMove board player -- A new board after the player moves
+        botMovedBoard <- getBotMove playerMovedBoard bot -- A new board after the bot moves
+        gameLoop True botMovedBoard player bot
       False -> do
-        let botMovedBoard = getBotMove board bot -- A new board after the bot moves
-        -- let playerMovedBoard = getPlayerMove botMovedBoard player -- A new board after the player moves, also TODO thats an IO Board!
-        -- TODO here you'd write whatever turns an IO Board into a board and call game loop again
-        putStrLn "Balls"
+        botMovedBoard <- getBotMove board bot -- A new board after the bot moves
+        playerMovedBoard <- getPlayerMove botMovedBoard player -- A new board after the player moves
+        gameLoop False playerMovedBoard player bot
 
 getPlayerMove :: Board -> Mark -> IO Board
 getPlayerMove board player = do
