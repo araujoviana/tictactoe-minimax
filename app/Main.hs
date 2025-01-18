@@ -114,15 +114,14 @@ displayBoard board = unlines (map displayRow board)
     displayRow :: [Mark] -> String
     displayRow row = unwords (map show row)
 
-updateBoard :: Board -> Int -> Int -> Mark -> Board
-updateBoard board row column mark =
-  -- REVIEW Unreadable?
-  take row board
-    ++ [ take column (board !! row)
-           ++ [mark]
-           ++ drop (column + 1) (board !! row)
-       ]
-    ++ drop (row + 1) board
+getBotMove :: Board -> Mark -> IO Board
+getBotMove board bot = do
+  let (maybeMove, _) = minimax board bot
+  case maybeMove of
+    Just pos -> return (applyMove board pos bot)
+    Nothing -> do
+      putStrLn "Bot can't move!"
+      return board
 
 gameOver :: Board -> Bool
 gameOver board = any ($ board) [horizontalCheck, verticalCheck, diagonalCheck]
@@ -151,19 +150,36 @@ minimax board bot
   | bot == X = maximizingMove board bot
   | bot == O = minimizingMove board bot
 
-maximizingMove :: Board -> Mark -> (Position, Score)
+-- A big misunderstanding that I had when making this is that no matter who the bot was,
+-- X was maximized and O was minimized, but minimax specifies that the bot wants to MAXIMIZE
+-- its play no matter what.
+minimax :: Board -> Mark -> (Maybe Position, Score)
+minimax board bot
+  | gameOver board = (Nothing, evaluate board bot)
+  | null (emptyPositions board) = (Nothing, evaluate board bot)
+  | otherwise =
+      if currentMark board == bot
+        then maximizingMove board bot
+        else minimizingMove board bot
+
+-- Maximizing for the bot
+maximizingMove :: Board -> Mark -> (Maybe Position, Score)
 maximizingMove board bot = maximumBy (comparing snd) moves
   where
-    moves = [(pos, minimax (applyMove board pos bot) (opponent bot)) | pos <- emptyPositions board]
+    moves = [(Just pos, snd (minimax (applyMove board pos (currentMark board)) bot)) | pos <- emptyPositions board]
 
-minimizingMove :: Board -> Mark -> (Position, Score)
-minimizingMove board bot = minimumBy (comparing snd) moves
+-- Minimizing for the opponent
+minimizingMove :: Board -> Mark -> (Maybe Position, Score)
+minimizingMove board bot = (minimumBy (comparing snd) moves)
   where
-    moves = [(pos, minimax (applyMove board pos bot) (opponent bot)) | pos <- emptyPositions board]
+    moves = [(Just pos, snd (minimax (applyMove board pos (currentMark board)) bot)) | pos <- emptyPositions board]
 
-opponent :: Mark -> Mark
-opponent X = O
-opponent O = X
+-- Determine the current player based on the state of the board
+currentMark :: Board -> Mark
+currentMark board =
+  if countMarks X board > countMarks O board then O else X
+  where
+    countMarks mark = length . filter (== mark) . concat
 
 emptyPositions :: Board -> [Position]
 emptyPositions board =
@@ -182,70 +198,23 @@ applyMove board (row, column) mark =
 -- Evaluate, interprets a board and checks if its beneficial to the bot.
 evaluate :: Board -> Mark -> Int
 evaluate board bot
-  | horizontalCheck board = if checkWinner board bot then 1 else -1
-  | verticalCheck board = if checkWinner board bot then 1 else -1
-  | diagonalCheck board = if checkWinner board bot then 1 else -1
+  | null board = 0 -- Empty board
+  | horizontalCheck board = if markWins board bot then 1 else -1
+  | verticalCheck board = if markWins board bot then 1 else -1
+  | diagonalCheck board = if markWins board bot then 1 else -1
   | otherwise = 0
+
+-- Similar to gameOver but it's utilised in minimax to check if a SPECIFIC mark wins
+markWins :: Board -> Mark -> Bool
+markWins [] _ = False
+markWins _ Empty = False -- This shouldn't be possible anyways...
+markWins board mark =
+  any (all (== mark)) board
+    || any (all (== mark)) (transpose board)
+    || diagonals
   where
-    checkWinner b mark =
-      any (all (== mark)) b
-        || any (all (== mark)) (transpose b)
-        || checkDiagonals b mark
-    checkDiagonals b mark =
-      let n = length b
-          -- REVIEW Too complicated, maybe make it a function?
-          mainDiagonal = [b !! i !! i | i <- [0 .. n - 1]]
-          antiDiagonal = [b !! i !! (n - 1 - i) | i <- [0 .. n - 1]]
+    diagonals =
+      let n = length board
+          mainDiagonal = [board !! i !! i | i <- [0 .. n - 1]]
+          antiDiagonal = [board !! i !! (n - 1 - i) | i <- [0 .. n - 1]]
        in all (== mark) mainDiagonal || all (== mark) antiDiagonal
-
--- NOTE TESTING BOARDS FOR REPL
-
--- All rows are the same (horizontal win for X)
-board1 :: Board
-board1 =
-  [ [X, X, X],
-    [X, X, X],
-    [X, X, X]
-  ]
-
--- Mixed rows (no horizontal win)
-board2 :: Board
-board2 =
-  [ [X, X, O],
-    [X, O, X],
-    [O, X, O]
-  ]
-
--- One row is uniform, but others aren't (no horizontal win)
-board3 :: Board
-board3 =
-  [ [X, X, X],
-    [O, Empty, O],
-    [X, O, X]
-  ]
-
--- All rows are uniform, but with different Marks (no horizontal win)
-board4 :: Board
-board4 =
-  [ [X, X, X],
-    [O, O, O],
-    [Empty, Empty, Empty]
-  ]
-
--- Empty board (no horizontal win)
-board5 :: Board
-board5 =
-  [ [Empty, Empty, Empty],
-    [Empty, Empty, Empty],
-    [Empty, Empty, Empty]
-  ]
-
--- Horizontal win for O
-board6 :: Board
-board6 =
-  [ [O, O, O],
-    [O, O, O],
-    [O, O, O]
-  ]
-
-boards = [board1, board2, board3, board4, board5, board6]
