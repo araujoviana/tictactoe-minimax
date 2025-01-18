@@ -16,6 +16,7 @@ import Text.Read (readMaybe)
 data Mark = O | Empty | X deriving (Eq, Ord)
 
 instance Read Mark where
+  readsPrec :: Int -> ReadS Mark
   readsPrec _ "O" = [(O, "")]
   readsPrec _ "X" = [(X, "")]
   readsPrec _ _ = [] -- Users shouldn't be able to write Empty
@@ -110,7 +111,6 @@ getPlayerMove board player = do
 displayBoard :: Board -> String
 displayBoard board = unlines (map displayRow board)
   where
-    -- This function will display a single row of the board
     displayRow :: [Mark] -> String
     displayRow row = unwords (map show row)
 
@@ -151,6 +151,7 @@ fullCheck = all (notElem Empty)
 -- A big misunderstanding that I had when making this is that no matter who the bot was,
 -- X was maximized and O was minimized, but minimax specifies that the bot wants to MAXIMIZE
 -- its play no matter what.
+
 minimax :: Board -> Mark -> (Maybe Position, Score)
 minimax board bot
   | gameOver board = (Nothing, evaluate board bot)
