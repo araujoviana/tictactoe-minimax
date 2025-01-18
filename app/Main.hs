@@ -1,15 +1,15 @@
--- Based on the python implementation Cledersonbc at https://github.com/Cledersonbc/tic-tac-toe-minimax
+-- Based on the python implementation by Cledersonbc at https://github.com/Cledersonbc/tic-tac-toe-minimax
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
 {-# HLINT ignore "Use if" #-}
 
+-- REVIEW Remove all logic that implies that the player could choose its mark
+
 module Main where
 
-import Control.Monad
 import Data.Char (toLower)
 import Data.List (maximumBy, minimumBy, transpose)
-import Data.Maybe (fromMaybe, isNothing)
-import Data.Ord
+import Data.Ord (comparing)
 import Text.Read (readMaybe)
 
 -- X is the minimizing player and O is the minimizing player
