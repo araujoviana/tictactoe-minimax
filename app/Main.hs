@@ -107,8 +107,12 @@ getPlayerMove board player = do
       putStrLn "\nInvalid input! Enter a number between 1 and 9."
       getPlayerMove board player
 
-getBotMove :: Board -> Mark -> IO Board
-getBotMove board bot = undefined -- TODO
+displayBoard :: Board -> String
+displayBoard board = unlines (map displayRow board)
+  where
+    -- This function will display a single row of the board
+    displayRow :: [Mark] -> String
+    displayRow row = unwords (map show row)
 
 updateBoard :: Board -> Int -> Int -> Mark -> Board
 updateBoard board row column mark =
