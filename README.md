@@ -2,6 +2,8 @@
 
 Tic-Tac-Toe Minimax implementation in CLI, utilizing a Minimax algorithm for bot decision-making, inspired by [Cledersonbc's Python implementation](https://github.com/Cledersonbc/tic-tac-toe-minimax)
 
+![demo](./assets/demoMinimax.gif)
+
 ## Installation
 
 ### Prerequisites
